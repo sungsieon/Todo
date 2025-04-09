@@ -1,23 +1,46 @@
 import './App.css';
-import {useRef,useState} from 'react';
+import {useRef,useState,useEffect} from 'react';
 
 
 function App() {
 
-const [todos,setTodos] = useState<(string | number)[]>([]);
+const [todos,setTodos] = useState<(string | number)[]>(() => {
+  const saved = localStorage.getItem("todos");
+  return saved ? JSON.parse(saved) : [];
+});;
+
+const [nextPage,setNextPage] = useState(false)
 
 const listRef = useRef<HTMLInputElement>(null);
 
 
+ useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+ }, [todos])
+
+
   
   const addList = () => {
-
+  
     if(listRef.current){
-      const inputValue = listRef.current.value;
+        const inputValue = listRef.current.value.trim();
       setTodos((prev) => [...prev,inputValue]);
+
+      listRef.current.value = "";
+      }
+
+    if(todos.length % 5 === 0){
+      setNextPage(true);
+    }
+      
     }
 
+  const deleteBtn = (indexToDelete : number) => {
+     setTodos((prevTodos) => prevTodos.filter((_,index) => index != indexToDelete)
+    );
   }
+
+  
    
 
   return (
@@ -35,7 +58,7 @@ const listRef = useRef<HTMLInputElement>(null);
 </svg>
 <span className="text-white">My Todo List</span>
     </div>
-    <div className=" w-[30rem] h-[35rem] p-8 bg-[#17191F] border-2 border-[#181A20] rounded-[30px] ">
+    <div className="w-[30rem] h-[37rem] p-8 bg-[#17191F] border-2 border-[#181A20] rounded-[30px] ">
 
     <div className="flex">
       <input ref={listRef} className="w-full bg-[#1A1C23] p-6 rounded-[15px]" placeholder='할 일을 입력하세요'/>
@@ -49,10 +72,13 @@ const listRef = useRef<HTMLInputElement>(null);
     <span className="ml-2">{todo}</span>
     </label>
      
-    <div><span>X</span></div>
-    </div>
-    ))}
+    <div onClick={() =>deleteBtn(index)} className="cursor-pointer"><span>X</span></div>
+
     
+    </div>
+    
+    ))}
+    <span className="text-white flex justify-center">1</span>
     
 
     </div>
@@ -60,5 +86,6 @@ const listRef = useRef<HTMLInputElement>(null);
     </div>
   );
 }
+
 
 export default App;
